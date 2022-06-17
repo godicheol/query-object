@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>query-object</title>
+    <style>
+        .line{margin: 1rem 0; border-bottom: 1px solid;}
+        td, th{border: 1px solid;}
+    </style>
+</head>
+
+<body>
+    <h1>query-object</h1>
+
+    <h4>Objects</h4>
+
+    <table>
+        <tr>
+            <th>id</th>
+            <th>index</th>
+            <th>name</th>
+        </tr>
+        <tr>
+            <td>a</td>
+            <td>1</td>
+            <td>a</td>
+        </tr>
+        <tr>
+            <td>b</td>
+            <td>2</td>
+            <td>b</td>
+        </tr>
+        <tr>
+            <td>c</td>
+            <td>3</td>
+            <td>c</td>
+        </tr>
+        <tr>
+            <td>d</td>
+            <td>4</td>
+            <td>d</td>
+        </tr>
+        <tr>
+            <td>e</td>
+            <td>5</td>
+            <td>e</td>
+        </tr>
+        <tr>
+            <td>f</td>
+            <td>6</td>
+            <td>f</td>
+        </tr>
+    </table>
+
+    <div class="line"></div>
+
+    <h4>Query</h4>
+
+    <pre>
+query = {
+    $or: [{
+        id: {
+            $in: ["a", "b"]
+        }
+    }, {
+        index: {
+            $gt: 3
+        }
+    }]
+}
+    </pre>
+
+    <div class="line"></div>
+
+    <h4>Result</h4>
+
+    <pre>
+[
+    {
+        "id": "a",
+        "index": 1,
+        "name": "a"
+    },
+    {
+        "id": "b",
+        "index": 2,
+        "name": "b"
+    },
+    {
+        "id": "d",
+        "index": 4,
+        "name": "d"
+    },
+    {
+        "id": "e",
+        "index": 5,
+        "name": "e"
+    },
+    {
+        "id": "f",
+        "index": 6,
+        "name": "f"
+    }
+]
+    </pre>
+
+
+    <script src="dist/query-object.js"></script>
+    <script>
+        var objects = [{
+            id: "a",
+            index: 1,
+            name: "a"
+        }, {
+            id: "b",
+            index: 2,
+            name: "b",
+        }, {
+            id: "c",
+            index: 3,
+            name: "c",
+        }, {
+            id: "d",
+            index: 4,
+            name: "d",
+        }, {
+            id: "e",
+            index: 5,
+            name: "e",
+        }, {
+            id: "f",
+            index: 6,
+            name: "f",
+        }];
+
+        var query = {
+            $or: [{
+                id: {
+                    $in: ["a", "b"]
+                }
+            }, {
+                index: {
+                    $gt: 3
+                }
+            }]
+        }
+
+        var arr = [];
+        for (var i = 0; i < objects.length; i++) {
+            var res = queryObject.match(objects[i], query);
+            if (res) {
+                arr.push(objects[i]);
+            }
+        }
+    </script>
+</body>
+
+</html>
