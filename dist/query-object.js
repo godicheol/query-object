@@ -3,31 +3,67 @@
 
     var exports = {};
 
-    exports.isOperator = function(arg) {
-        return /^\$+(in|or|and|eq|ne|lte|gte|lt|gt)$/.test(arg);
+    exports.isUndefined = function(arg) {
+        return typeof(arg) === "undefined";
     }
-
-    exports.isArray = function(arg) {
-        return Object.prototype.toString.call(arg) === '[object Array]';
+    exports.isNull = function(arg) {
+        return arg === null;
     }
-
+    exports.isBoolean = function(arg) {
+        return (arg === true || arg === false);
+    }
+    exports.isString = function(arg) {
+        return typeof(arg) === "string";
+    }
+    exports.isNumber = function(arg) {
+        return typeof(arg) === "number";
+    }
     exports.isNumeric = function(arg) {
         return (typeof(arg) === "string") && !isNaN(parseFloat(arg)) && isFinite(arg);
     }
-
-    exports.match = function(obj, query) {
-        if (typeof(obj) !== "object") {
-            console.error("obj is not Object");
+    exports.isObject = function(arg) {
+        return (typeof(arg) === "object" && arg !== null);
+    }
+    exports.isFunction = function(arg) {
+        return typeof(arg) === "function";
+    }
+    exports.isBlob = function(arg) {
+        return (arg instanceof Blob);
+    }
+    exports.isNode = function(arg) {
+        return (typeof(Node) === "object" ? (arg instanceof Node) : typeof(arg) === "object" && arg !== null && typeof(arg.nodeType) === "number" && typeof(arg.nodeName) === "string");
+    }
+    exports.isElement = function(arg) {
+        return (typeof(HTMLElement === "object") ? (arg instanceof HTMLElement) : typeof(arg) === "object" && arg !== null  && arg.nodeType === 1 && typeof(arg.nodeName) === "string");
+    }
+    exports.isArray = function(arg) {
+        return Object.prototype.toString.call(arg) === '[object Array]';
+    }
+    exports.isDate = function(arg) {
+        return (arg instanceof Date) && !isNaN(arg.valueOf())
+    }
+    exports.isOperator = function(arg) {
+        return /^\$+(in|or|and|eq|ne|lte|gte|lt|gt)$/.test(arg);
+    }
+    exports.match = function(a, b) {
+        if (typeof(a) !== "object") {
+            console.error("Parameter is not Object");
             return false;
         }
-        if (typeof(query) !== "object") {
-            console.error("query is not Object");
+        if (typeof(b) !== "object") {
+            console.error("Parameter is not Object");
             return false;
         }
 
-        var isOperator = this.isOperator;
-        var isArray = this.isArray;
+        var isUndefined = this.isUndefined;
+        var isNull = this.isNull;
+        var isBoolean = this.isBoolean;
+        var isString = this.isString;
+        var isNumber = this.isNumber;
         var isNumeric = this.isNumeric;
+        var isArray = this.isArray;
+        var isObject = this.isObject;
+        var isOperator = this.isOperator;
         var pars;
         var calc;
 
@@ -92,13 +128,13 @@
                 } else {
                     return false;
                 }
-            } else if (typeof(value) === "object" && value !== null) {
+            } else if (isObject(value)) {
                 keys = Object.keys(value);
                 len = keys.length;
                 for (i = 0; i < len; i++) {
                     key = keys[i];
                     y = value[key];
-                    if (typeof(x) === "number" && isNumeric(y)) {
+                    if (isNumber(x) && isNumeric(y)) {
                         y = parseInt(y, 10);
                     }
                     if (isOperator(key)) {
@@ -114,7 +150,6 @@
                             count++;
                         } else if (
                             (key === "$in") &&
-                            (typeof(x) === "string" || typeof(x) === "number") &&
                             isArray(y) &&
                             (y.indexOf(x) > -1)
                         ) {
@@ -149,14 +184,14 @@
                 return count === len;
             } else {
                 y = value;
-                if (typeof(x) === "number" && isNumeric(y)) {
+                if (isNumber(x) && isNumeric(y)) {
                     y = parseInt(y, 10);
                 }
                 return x === y;
             }
         }
 
-        return pars(obj, query);
+        return pars(a, b);
     }
 
     if (typeof(window.queryObject) === "undefined") {
