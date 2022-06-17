@@ -46,18 +46,6 @@
         return /^\$+(in|or|and|eq|ne|lte|gte|lt|gt)$/.test(arg);
     }
     exports.match = function(a, b) {
-        if (typeof(a) !== "object") {
-            console.error("Parameter is not Object");
-            return false;
-        }
-        if (typeof(b) !== "object") {
-            console.error("Parameter is not Object");
-            return false;
-        }
-
-        var isUndefined = this.isUndefined;
-        var isNull = this.isNull;
-        var isBoolean = this.isBoolean;
         var isString = this.isString;
         var isNumber = this.isNumber;
         var isNumeric = this.isNumeric;
@@ -67,6 +55,14 @@
         var pars;
         var calc;
 
+        if (!isObject(a)) {
+            console.error("Parameter is not Object");
+            return false;
+        }
+        if (!isObject(b)) {
+            b = {};
+        }
+        
         pars = function(obj, query) {
             var i;
             var keys;
@@ -98,10 +94,8 @@
             var len;
             var count = 0;
             var res;
-            var x;
+            var x = obj[field];
             var y;
-
-            x = obj[field];
 
             if (isOperator(field) && isArray(value)) {
                 if (field === "$or") {
