@@ -51,6 +51,7 @@
         var isNumeric = this.isNumeric;
         var isArray = this.isArray;
         var isObject = this.isObject;
+        var isDate = this.isDate;
         var isOperator = this.isOperator;
         var pars;
         var calc;
@@ -131,6 +132,10 @@
                     if (isNumber(x) && isNumeric(y)) {
                         y = parseInt(y, 10);
                     }
+                    if (isDate(x) && isDate(y)) {
+                        x = x.getTime();
+                        y = y.getTime();
+                    }
                     if (isOperator(key)) {
                         if (
                             (key === "$eq") &&
@@ -180,6 +185,10 @@
                 y = value;
                 if (isNumber(x) && isNumeric(y)) {
                     y = parseInt(y, 10);
+                }
+                if (isDate(x) && isDate(y)) {
+                    x = x.getTime();
+                    y = y.getTime();
                 }
                 return x === y;
             }
