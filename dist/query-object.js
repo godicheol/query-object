@@ -132,8 +132,10 @@
                     if (isNumber(x) && isNumeric(y)) {
                         y = parseInt(y, 10);
                     }
-                    if (isDate(x) && isDate(y)) {
+                    if (isDate(x)) {
                         x = x.getTime();
+                    }
+                    if (isDate(y)) {
                         y = y.getTime();
                     }
                     if (isOperator(key)) {
@@ -186,8 +188,10 @@
                 if (isNumber(x) && isNumeric(y)) {
                     y = parseInt(y, 10);
                 }
-                if (isDate(x) && isDate(y)) {
+                if (isDate(x)) {
                     x = x.getTime();
+                }
+                if (isDate(y)) {
                     y = y.getTime();
                 }
                 return x === y;
