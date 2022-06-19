@@ -10,16 +10,16 @@
         return arg === null;
     }
     exports.isBoolean = function(arg) {
-        return (arg === true || arg === false);
+        return typeof(arg) === "boolean";
     }
     exports.isString = function(arg) {
         return typeof(arg) === "string";
     }
     exports.isNumber = function(arg) {
-        return typeof(arg) === "number";
+        return typeof(arg) === "number" && !Number.isNaN(arg);
     }
     exports.isNumeric = function(arg) {
-        return (typeof(arg) === "string") && !isNaN(parseFloat(arg)) && isFinite(arg);
+        return (typeof(arg) === "string") && !Number.isNaN(parseFloat(arg)) && isFinite(arg);
     }
     exports.isObject = function(arg) {
         return (typeof(arg) === "object" && arg !== null);
@@ -40,7 +40,7 @@
         return Object.prototype.toString.call(arg) === '[object Array]';
     }
     exports.isDate = function(arg) {
-        return (arg instanceof Date) && !isNaN(arg.valueOf())
+        return (arg instanceof Date) && !Number.isNaN(arg.valueOf())
     }
     exports.isOperator = function(arg) {
         return /^\$+(in|or|and|eq|ne|lte|gte|lt|gt)$/.test(arg);
