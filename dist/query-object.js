@@ -45,6 +45,8 @@
     exports.isOperator = function(arg) {
         return /^\$+(in|or|and|eq|ne|lte|gte|lt|gt)$/.test(arg);
     }
+    // a: object
+    // b: query
     exports.match = function(a, b) {
         var isString = this.isString;
         var isNumber = this.isNumber;
@@ -57,8 +59,7 @@
         var calc;
 
         if (!isObject(a)) {
-            console.error("Parameter is not Object");
-            return false;
+            throw new Error("Parameter must be a Object");
         }
         if (!isObject(b)) {
             b = {};
