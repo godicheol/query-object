@@ -133,7 +133,6 @@
                 for (i = 0; i < len; i++) {
                     key = keys[i];
                     y = value[key];
-                    console.log(key, y)
                     if (isNumber(x) && isNumeric(y)) {
                         y = parseInt(y, 10);
                     }
