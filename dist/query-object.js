@@ -103,8 +103,8 @@
             var y;
 
             if (isOperator(field) && isArray(value)) {
+                len = value.length;
                 if (field === "$or") {
-                    len = value.length;
                     for (i = 0; i < len; i++) {
                         res = pars(obj, value[i]);
                         if (res) {
@@ -114,7 +114,6 @@
                     }
                     return count > 0;
                 } else if (field === "$and") {
-                    len = value.length;
                     for (i = 0; i < len; i++) {
                         res = pars(obj, value[i]);
                         if (res) {
@@ -127,7 +126,7 @@
                 } else {
                     return false;
                 }
-            } else if (isObject(value)) {
+            } else if (!isObject(x) && isObject(value)) {
                 keys = Object.keys(value);
                 len = keys.length;
                 for (i = 0; i < len; i++) {
@@ -191,6 +190,19 @@
                         } else {
                             break;
                         }
+                    } else {
+                        break;
+                    }
+                }
+                return count === len;
+            } else if (isObject(x) && isObject(value)) {
+                y = value;
+                keys = Object.keys(y);
+                len = keys.length;
+                for (i = 0; i < len; i++) {
+                    res = pars(x, y);
+                    if (res) {
+                        count++;
                     } else {
                         break;
                     }
