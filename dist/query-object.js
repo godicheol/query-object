@@ -43,17 +43,20 @@
         return (arg instanceof Date) && !Number.isNaN(arg.valueOf())
     }
     exports.isOperator = function(arg) {
-        return /^\$+(in|or|and|eq|ne|lte|gte|lt|gt)$/.test(arg);
+        return /^\$+(in|or|and|eq|ne|lte|gte|lt|gt|exists)$/.test(arg);
     }
     // a: object
     // b: query
     exports.match = function(a, b) {
+        var isBoolean = this.isBoolean;
         var isString = this.isString;
         var isNumber = this.isNumber;
         var isNumeric = this.isNumeric;
         var isArray = this.isArray;
         var isObject = this.isObject;
         var isDate = this.isDate;
+        var isNull = this.isNull;
+        var isUndefined = this.isUndefined;
         var isOperator = this.isOperator;
         var pars;
         var calc;
@@ -130,6 +133,7 @@
                 for (i = 0; i < len; i++) {
                     key = keys[i];
                     y = value[key];
+                    console.log(key, y)
                     if (isNumber(x) && isNumeric(y)) {
                         y = parseInt(y, 10);
                     }
@@ -148,6 +152,15 @@
                         } else if (
                             (key === "$ne") &&
                             (x !== y)
+                        ) {
+                            count++;
+                        } else if (
+                            (key === "$exists") &&
+                            (isBoolean(y) || isNumber(y)) &&
+                            (
+                                ((y === false || y <= 0) && isUndefined(x)) ||
+                                ((y === true || y > 0) && !isUndefined(x))
+                            )
                         ) {
                             count++;
                         } else if (

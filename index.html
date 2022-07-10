@@ -14,97 +14,19 @@
 <body>
     <h1>query-object</h1>
 
-    <h4>Objects</h4>
+    <h4>Array of objects</h4>
 
-    <table>
-        <tr>
-            <th>id</th>
-            <th>index</th>
-            <th>name</th>
-        </tr>
-        <tr>
-            <td>a</td>
-            <td>1</td>
-            <td>a</td>
-        </tr>
-        <tr>
-            <td>b</td>
-            <td>2</td>
-            <td>b</td>
-        </tr>
-        <tr>
-            <td>c</td>
-            <td>3</td>
-            <td>c</td>
-        </tr>
-        <tr>
-            <td>d</td>
-            <td>4</td>
-            <td>d</td>
-        </tr>
-        <tr>
-            <td>e</td>
-            <td>5</td>
-            <td>e</td>
-        </tr>
-        <tr>
-            <td>f</td>
-            <td>6</td>
-            <td>f</td>
-        </tr>
-    </table>
-
-    <div class="line"></div>
+    <pre id="result-0"></pre>
 
     <h4>Query</h4>
 
-    <pre>
-query = {
-    $or: [{
-        id: {
-            $in: ["a", "b"]
-        }
-    }, {
-        index: {
-            $gt: 3
-        }
-    }]
-}
-    </pre>
+    <pre id="result-1"></pre>
 
     <div class="line"></div>
 
     <h4>Result</h4>
 
-    <pre>
-[
-    {
-        "id": "a",
-        "index": 1,
-        "name": "a"
-    },
-    {
-        "id": "b",
-        "index": 2,
-        "name": "b"
-    },
-    {
-        "id": "d",
-        "index": 4,
-        "name": "d"
-    },
-    {
-        "id": "e",
-        "index": 5,
-        "name": "e"
-    },
-    {
-        "id": "f",
-        "index": 6,
-        "name": "f"
-    }
-]
-    </pre>
+    <pre id="result-2"></pre>
 
 
     <script src="dist/query-object.js"></script>
@@ -112,37 +34,42 @@ query = {
         var objects = [{
             id: "a",
             index: 1,
-            name: "a"
+            name: "moo"
         }, {
             id: "b",
             index: 2,
-            name: "b",
+            name: "noo",
         }, {
             id: "c",
             index: 3,
-            name: "c",
+            name: "goo",
         }, {
             id: "d",
             index: 4,
-            name: "d",
+            name: "doo",
         }, {
             id: "e",
             index: 5,
-            name: "e",
+            name: "bar",
         }, {
             id: "f",
             index: 6,
-            name: "f",
+            name: "foo",
+            type: "bar"
         }];
 
         var query = {
             $or: [{
                 id: {
                     $in: ["a", "b"]
-                }
+                },
+                name: "moo"
             }, {
                 index: {
                     $gt: 3
+                },
+                type: {
+                    $exists: 1
                 }
             }]
         }
@@ -154,7 +81,10 @@ query = {
                 arr.push(objects[i]);
             }
         }
-        console.log(arr);
+
+        document.getElementById("result-0").innerHTML = JSON.stringify(objects, null, 2);
+        document.getElementById("result-1").innerHTML = JSON.stringify(query, null, 2);
+        document.getElementById("result-2").innerHTML = JSON.stringify(arr, null, 2);
     </script>
 </body>
 
