@@ -63,7 +63,11 @@
                 id: {
                     $in: ["a", "b"]
                 },
-                name: "moo"
+                $or: [{
+                    name: "moo"
+                }, {
+                    name: "noo"
+                }]
             }, {
                 index: {
                     $gt: 3

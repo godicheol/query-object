@@ -27,27 +27,22 @@
     exports.isFunction = function(arg) {
         return typeof(arg) === "function";
     }
-    exports.isBlob = function(arg) {
-        return (arg instanceof Blob);
-    }
-    exports.isNode = function(arg) {
-        return (typeof(Node) === "object" ? (arg instanceof Node) : typeof(arg) === "object" && arg !== null && typeof(arg.nodeType) === "number" && typeof(arg.nodeName) === "string");
-    }
-    exports.isElement = function(arg) {
-        return (typeof(HTMLElement === "object") ? (arg instanceof HTMLElement) : typeof(arg) === "object" && arg !== null  && arg.nodeType === 1 && typeof(arg.nodeName) === "string");
-    }
     exports.isArray = function(arg) {
         return Object.prototype.toString.call(arg) === '[object Array]';
     }
     exports.isDate = function(arg) {
         return (arg instanceof Date) && !Number.isNaN(arg.valueOf())
     }
-    exports.isOperator = function(arg) {
-        return /^\$+(in|or|and|eq|ne|lte|gte|lt|gt|exists)$/.test(arg);
+    exports.isRegExp = function(arg) {
+        return (arg instanceof RegExp);
     }
-    // a: object
-    // b: query
-    exports.match = function(a, b) {
+    exports.isComparisionOperator = function(arg) {
+        return /^\$+(eq|ne|lte|gte|lt|gt|in|exists)$/.test(arg);
+    }
+    exports.isLogicalOperator = function(arg) {
+        return /^\$+(and|or|nor)$/.test(arg);
+    }
+    exports.match = function(object, query) {
         var isBoolean = this.isBoolean;
         var isString = this.isString;
         var isNumber = this.isNumber;
@@ -56,174 +51,224 @@
         var isObject = this.isObject;
         var isDate = this.isDate;
         var isNull = this.isNull;
+        var isRegExp = this.isRegExp;
         var isUndefined = this.isUndefined;
-        var isOperator = this.isOperator;
-        var pars;
-        var calc;
+        var isLogicalOperator = this.isLogicalOperator;
+        var isComparisionOperator = this.isComparisionOperator;
 
-        if (!isObject(a)) {
-            throw new Error("Parameter must be a Object");
-        }
-        if (!isObject(b)) {
-            b = {};
-        }
-        
-        pars = function(obj, query) {
-            var i;
-            var keys;
-            var field;
-            var value;
-            var len;
-            var count = 0;
-            var res;
-            
-            keys = Object.keys(query);
-            len = keys.length;
-            for (i = 0; i < len; i++) {
-                field = keys[i];
-                value = query[field];
-                res = calc(obj, field, value);
-                if (res) {
-                    count++;
-                } else {
-                    return false;
-                }
+        function step(obj, qry) {
+            if (!isObject(obj)) {
+                throw new Error("object must be a object");
             }
-            return count === len;
-        }
-
-        calc = function(obj, field, value) {
-            var i;
-            var keys;
-            var key;
-            var len;
-            var count = 0;
-            var res;
-            var x = obj[field];
-            var y;
-
-            if (isOperator(field) && isArray(value)) {
-                len = value.length;
-                if (field === "$or") {
-                    for (i = 0; i < len; i++) {
-                        res = pars(obj, value[i]);
-                        if (res) {
-                            count++;
-                            break;
-                        }
-                    }
-                    return count > 0;
-                } else if (field === "$and") {
-                    for (i = 0; i < len; i++) {
-                        res = pars(obj, value[i]);
-                        if (res) {
-                            count++;
-                        } else {
-                            break;
-                        }
-                    }
-                    return count === len;
-                } else {
-                    return false;
-                }
-            } else if (!isObject(x) && isObject(value)) {
-                keys = Object.keys(value);
-                len = keys.length;
-                for (i = 0; i < len; i++) {
-                    key = keys[i];
-                    y = value[key];
-                    if (isNumber(x) && isNumeric(y)) {
-                        y = parseInt(y, 10);
-                    }
-                    if (isDate(x)) {
-                        x = x.getTime();
-                    }
-                    if (isDate(y)) {
-                        y = y.getTime();
-                    }
-                    if (isOperator(key)) {
-                        if (
-                            (key === "$eq") &&
-                            (x === y)
-                        ) {
-                            count++;
-                        } else if (
-                            (key === "$ne") &&
-                            (x !== y)
-                        ) {
-                            count++;
-                        } else if (
-                            (key === "$exists") &&
-                            (isBoolean(y) || isNumber(y)) &&
-                            (
-                                ((y === false || y <= 0) && isUndefined(x)) ||
-                                ((y === true || y > 0) && !isUndefined(x))
-                            )
-                        ) {
-                            count++;
-                        } else if (
-                            (key === "$in") &&
-                            isArray(y) &&
-                            (y.indexOf(x) > -1)
-                        ) {
-                            count++;
-                        } else if (
-                            (key === "$gt") &&
-                            (x > y)
-                        ) {
-                            count++;
-                        } else if (
-                            (key === "$gte") &&
-                            (x >= y)
-                        ) {
-                            count++;
-                        } else if (
-                            (key === "$lt") &&
-                            (x < y)
-                        ) {
-                            count++;
-                        } else if (
-                            (key === "$lte") &&
-                            (x <= y)
-                        ) {
-                            count++;
-                        } else {
-                            break;
-                        }
+            if (!isObject(qry)) {
+                throw new Error("query must be a object");
+            }
+            var queryKeys = Object.keys(qry),
+                key,
+                objectValue,
+                queryValue,
+                queryValueKeys,
+                queryValueKey,
+                queryValueValue,
+                i,
+                j,
+                count = 0,
+                subcount = 0;
+            for (i = 0; i < queryKeys.length; i++) {
+                key = queryKeys[i];
+                objectValue = obj[key];
+                queryValue = qry[key];
+                subcount = 0;
+                if (isLogicalOperator(key)) {
+                    if (calc2(obj, queryValue, key)) {
+                        count++;
                     } else {
                         break;
                     }
-                }
-                return count === len;
-            } else if (isObject(x) && isObject(value)) {
-                y = value;
-                keys = Object.keys(y);
-                len = keys.length;
-                for (i = 0; i < len; i++) {
-                    res = pars(x, y);
-                    if (res) {
+                } else {
+                    if (isRegExp(queryValue)) {
+                        if (calc(objectValue, queryValue, key)) {
+                            count++;
+                        } else {
+                            break;
+                        }
+                    } else if (isObject(objectValue) && isObject(queryValue)) {
+                        if (step(objectValue, queryValue)) {
+                            count++;
+                        } else {
+                            break;
+                        }
+                    } else if (!isObject(objectValue) && isObject(queryValue)) {
+                        if (hasOperator(queryValue)) {
+                            queryValueKeys = Object.keys(queryValue);
+                            for (j = 0; j < queryValueKeys.length; j++) {
+                                queryValueKey = queryValueKeys[j];
+                                queryValueValue = queryValue[queryValueKey];
+                                if (calc(objectValue, queryValueValue, queryValueKey)) {
+                                    subcount++;
+                                } else {
+                                    break;
+                                }
+                            }
+                            if (subcount === queryValueKeys.length) {
+                                count++;
+                            } else {
+                                break;
+                            }
+                        } else if (step(obj, queryValue)) {
+                            count++;
+                        } else {
+                            break;
+                        }
+                    } else if (!isObject(objectValue) && calc(objectValue, queryValue, "=")) {
                         count++;
                     } else {
                         break;
                     }
                 }
-                return count === len;
-            } else {
-                y = value;
-                if (isNumber(x) && isNumeric(y)) {
-                    y = parseInt(y, 10);
+            }
+            return count === queryKeys.length;
+        }
+
+        function calc(a, b, o) {
+            if (isNumber(a) && isNumeric(b)) {
+                b = parseInt(b, 10);
+            }
+            if (isNumber(b) && isNumeric(a)) {
+                a = parseInt(a, 10);
+            }
+            if (isDate(a)) {
+                a = a.getTime();
+            }
+            if (isDate(b)) {
+                b = b.getTime();
+            }
+            if (isRegExp(a)) {
+                if (isArray(b)) {
+                    throw new Error("RegExp field value must not be array");
                 }
-                if (isDate(x)) {
-                    x = x.getTime();
+                if (isObject(b)) {
+                    throw new Error("RegExp field value must not be object");
                 }
-                if (isDate(y)) {
-                    y = y.getTime();
+                return a.test(b);
+            }
+            if (isRegExp(b)) {
+                if (isArray(a)) {
+                    throw new Error("RegExp field value must not be array");
                 }
-                return x === y;
+                if (isObject(a)) {
+                    throw new Error("RegExp field value must not be object");
+                }
+                return b.test(a);
+            }
+            switch(o) {
+                case "+": return a + b;
+                case "-": return a - b;
+                case "*": return a * b;
+                case "/": return a / b;
+                case "%": return a % b;
+                case ">":
+                case "$gt":
+                    if (!isNumber(a) || !isNumber(b)) {
+                        throw new Error("$gt field value must be a number");
+                    }
+                    return a > b;
+                case ">=":
+                case "$gte":
+                    if (!isNumber(a) || !isNumber(b)) {
+                        throw new Error("$gte field value must be a number");
+                    }
+                    return a >= b;
+                case "<":
+                case "$lt":
+                    if (!isNumber(a) || !isNumber(b)) {
+                        throw new Error("$lt field value must be a number");
+                    }
+                    return a < b;
+                case "<=":
+                case "$lte":
+                    if (!isNumber(a) || !isNumber(b)) {
+                        throw new Error("$lte field value must be a number");
+                    }
+                    return a <= b;
+                case "=":
+                case "$eq":
+                    if (isArray(a) || isArray(b)) {
+                        throw new Error("$eq field value must not be array");
+                    }
+                    if (isObject(a) || isObject(b)) {
+                        throw new Error("$eq field value must not be object");
+                    }
+                    return a === b;
+                case "!=":
+                case "$ne":
+                    if (isArray(a) || isArray(b)) {
+                        throw new Error("$ne field value must not be array");
+                    }
+                    if (isObject(a) || isObject(b)) {
+                        throw new Error("$ne field value must not be object");
+                    }
+                    return a !== b;
+                case "$in":
+                    if (!isArray(b)) {
+                        throw new Error("$in field value must be a array");
+                    }
+                    if (!isBoolean(a) && !isString(a) && !isNumber(a)) {
+                        throw new Error("$in field value must be boolean or string or number");
+                    }
+                    return b.indexOf(a) > -1;
+                case "$nin":
+                    if (!isArray(b)) {
+                        throw new Error("$nin field value must be a array");
+                    }
+                    if (!isBoolean(a) && !isString(a) && !isNumber(a)) {
+                        throw new Error("$nin field value must be boolean or string or number");
+                    }
+                    return b.indexOf(a) === -1;
+                case "$exists":
+                    console.log(b)
+                    return b > 0 || b === true ? typeof(a) !== "undefined" : typeof(a) === "undefined";
+                default: return false;
             }
         }
 
-        return pars(a, b);
+        function calc2(a, b, o) {
+            var i, count = 0;
+
+            if (!isObject(a)) {
+                throw new Error(o + " field value must be a object");
+            }
+            if (!isArray(b)) {
+                throw new Error(o + " field value must be a array");
+            }
+            for (i = 0; i < b.length; i++) {
+                if (!isObject(b[i])) {
+                    throw new Error(o + " field value must be a object");
+                }
+                if (step(a, b[i])) {
+                    count++;
+                }
+            }
+            switch(o) {
+                case "$and": return count === b.length;
+                case "$or": return count > 0;
+                case "$nor": return count < b.length;
+                default: return false;
+            }
+        }
+
+        function hasOperator(a) {
+            var keys = Object.keys(a);
+            var i;
+            for (i = 0; i < keys.length; i++) {
+                if (isComparisionOperator(keys[i])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return step(object, query);
     }
 
     if (typeof(window.queryObject) === "undefined") {
