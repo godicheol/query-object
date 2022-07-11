@@ -226,7 +226,6 @@
                     }
                     return b.indexOf(a) === -1;
                 case "$exists":
-                    console.log(b)
                     return b > 0 || b === true ? typeof(a) !== "undefined" : typeof(a) === "undefined";
                 default: return false;
             }
