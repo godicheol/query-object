@@ -20,13 +20,13 @@
 
     <h4>Query</h4>
 
-    <pre id="result-1"></pre>
+    <textarea id="query-1" style="width:100%" rows="20"></textarea>
 
     <div class="line"></div>
 
     <h4>Result</h4>
 
-    <pre id="result-2"></pre>
+    <pre id="result-1"></pre>
 
 
     <script src="dist/query-object.js"></script>
@@ -58,7 +58,7 @@
             type: "bar"
         }];
 
-        var query = {
+        document.getElementById("query-1").value = JSON.stringify({
             $or: [{
                 id: {
                     $in: ["a", "b"]
@@ -70,25 +70,44 @@
                 }]
             }, {
                 index: {
-                    $gt: 3
+                    "$gt": 3
                 },
                 type: {
-                    $exists: 1
+                    "$exists": 1
                 }
             }]
-        }
+        }, null, 2);
 
-        var arr = [];
-        for (var i = 0; i < objects.length; i++) {
-            var res = queryObject.match(objects[i], query);
-            if (res) {
-                arr.push(objects[i]);
+        document.getElementById("query-1").addEventListener("input", function(e) {
+            try {
+                var data = document.getElementById("query-1").value;
+                var query = JSON.parse(data);
+                var arr = [];
+                for (var i = 0; i < objects.length; i++) {
+                    var res = queryObject.match(objects[i], query);
+                    if (res) {
+                        arr.push(objects[i]);
+                    }
+                }
+                document.getElementById("result-1").innerHTML = JSON.stringify(arr, null, 2);
+            } catch(err) {
+                document.getElementById("result-1").innerHTML = "Error";
             }
-        }
+        })
 
         document.getElementById("result-0").innerHTML = JSON.stringify(objects, null, 2);
-        document.getElementById("result-1").innerHTML = JSON.stringify(query, null, 2);
-        document.getElementById("result-2").innerHTML = JSON.stringify(arr, null, 2);
+        (function() {
+            var data = document.getElementById("query-1").value;
+            var query = JSON.parse(data);
+            var arr = [];
+            for (var i = 0; i < objects.length; i++) {
+                var res = queryObject.match(objects[i], query);
+                if (res) {
+                    arr.push(objects[i]);
+                }
+            }
+            document.getElementById("result-1").innerHTML = JSON.stringify(arr, null, 2);
+        })()
     </script>
 </body>
 
